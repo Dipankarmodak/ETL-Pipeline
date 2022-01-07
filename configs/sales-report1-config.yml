@@ -1,0 +1,76 @@
+# configuration specific to creating s3 connections
+s3:
+  access_key: 'AWS_ACCESS_KEY_ID'
+  secret_key: 'AWS_SECRET_ACCESS_KEY'
+  src_endpoint_url: 'https://s3.amazonaws.com'
+  src_bucket: 'sales-data123'
+  trg_endpoint_url: 'https://s3.amazonaws.com'
+  trg_bucket: 'report-1234'
+
+source:
+  src_columns: ['U/M', 'Unnamed: 20', 'Unnamed: 21', 'Sales Price', 'Order Number',
+               'Line Number', 'Invoice Number','Item Number', 'Invoice Date', 'List Price',
+               'Promised Delivery Date','Sales Amount Based on List Price','Sales Rep']
+  src_columns2: ['Customer Address 1', 'Customer Address 2', 'Customer Address 3',
+               'Customer Address 4', 'Zip Code','Division', 'Region Code', 'Phone', 'CustKey',
+                'Country', 'Search Type','Profit Amount','Business Unit','Line of Business',
+            'Business Family','Address Number','Customer','Regional Sales Mgr']
+  src_col_custkey: 'CustKey'
+  src_col_amount: 'Sales Amount'
+  src_col_costamount: 'Sales Cost Amount'
+  src_col_marginamount: 'Sales Margin Amount'
+  src_col_dis_amount: 'Discount Amount'
+  src_col_salequant: 'Sales Quantity'
+  src_col_address: 'Address Number'
+  src_col_regioncode: 'Region Code'
+  src_col_divison: 'Division'
+  src_col_city: 'City'
+  src_col_state: 'State'
+  src_col_country: 'Country'
+  src_col_item_class: 'Item Class'
+  src_col_item: 'Item'
+  src_col_custype: 'Customer Type'
+  src_col_date: 'DateKey'
+  src_col_gpsaddress : 'Address'
+
+# configuration specific to the source
+target:
+  trg_col_custkey: 'CustKey'
+  trg_col_amount: 'Revenue'
+  trg_col_costamount: 'COGS'
+  trg_col_marginamount: 'Profit Amount'
+  trg_col_year: 'year'
+  trg_col_month: 'month'
+  trg_col_salequant: 'Sales Quantity'
+  trg_col_address: 'Address'
+  trg_col_profper: 'Profit_Margin_%'
+  trg_col_item_class: 'Item_Class'
+  trg_col_item: 'Item'
+  trg_col_custype: 'Customer_Type'
+  trg_col_city: 'City'
+  trg_col_state: 'State'
+  trg_col_region: 'Region_Name'
+  trg_col_div: 'Division'
+  trg_col_cogs: 'COGS'
+  trg_col_profit_marg: 'Profit_Margin'
+  trg_col_disamount: 'Discount_Amt'
+  trg_col_salequantity: 'Sales_Quantity'
+  trg_col_revenue: 'Revenue'
+  trg_col_lat: 'lat'
+  trg_col_lon: 'lon'
+  trg_key: 'sales-report'
+  trg_format: 'xlsx'
+
+logging:
+  version: 1
+  formatters:
+    sales:
+      format: "Sales Transformer - %(asctime)s - %(levelname)s - %(message)s"
+  handlers:
+    console:
+      class: logging.StreamHandler
+      formatter: sales
+      level: DEBUG
+  root:
+    level: DEBUG
+    handlers: [console]
