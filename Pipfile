@@ -1,0 +1,23 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+pandas = "*"
+boto3 = "*"
+pyarrow = "*"
+pyyaml = "*"
+feature-engine = "*"
+openpyxl = "*"
+xlrd = "*"
+
+[dev-packages]
+awscli = "*"
+moto = "*"
+pylint = "*"
+memory-profiler = "*"
+matplotlib = "*"
+
+[requires]
+python_version = "3.9"
