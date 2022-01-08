@@ -8,5 +8,5 @@ class S3FileTypes(Enum):
     """
     Supported file for S3BucketConnector
     """
-    EXCEL='xlsx'
+    CSV='csv'
     

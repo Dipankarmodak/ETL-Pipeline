@@ -5,10 +5,17 @@ import pandas as pd
 import numpy as np
 from feature_engine.imputation import MeanMedianImputer,RandomSampleImputer,CategoricalImputer
 from sales.common.s3 import S3BucketConnector
+
 class SalesSourceConfig(NamedTuple):
     """
     Class for source configuration data
     """
+    src_sales_data:str
+    src_customer_data:str
+    src_customeraddress_data:str
+    src_division_data:str
+    src_region_data:str
+    src_gps_data:str
     src_columns: list
     src_columns2:list
     src_col_date: str
@@ -28,6 +35,8 @@ class SalesSourceConfig(NamedTuple):
     src_col_item: str
     src_col_custype: str
     src_col_gpsaddress:str
+
+
 class SalesTargetConfig(NamedTuple):
     """
     Class for target configuration data
@@ -39,6 +48,7 @@ class SalesTargetConfig(NamedTuple):
     trg_col_salequant: str
     trg_col_year: str
     trg_col_month: str
+    trg_col_datekey:str
     trg_col_address: str
     trg_col_profper:str
     trg_col_item_class:str
@@ -57,8 +67,11 @@ class SalesTargetConfig(NamedTuple):
     trg_col_lat: str
     trg_col_lon: str
     trg_format: str
+
+
 class SalesETL():
     " Reads the Sales data, transforms and writes the transformed to target "
+
     def __init__(self, s3_bucket_src: S3BucketConnector, s3_bucket_trg: S3BucketConnector,
             src_args: SalesSourceConfig,trg_args: SalesTargetConfig):
         """
@@ -74,6 +87,7 @@ class SalesETL():
         self.s3_bucket_trg = s3_bucket_trg
         self.src_args = src_args
         self.trg_args = trg_args
+
     def extract(self):
         """
                Read the source data and concatenates them to one Pandas DataFrame
@@ -86,29 +100,34 @@ class SalesETL():
             dataframes_dictionary[f'{obj}'] = self.s3_bucket_src.read_excel_to_df(obj)
         self._logger.info('Extracting Sales source files finished.')
         return dataframes_dictionary
+
     def transform_report1(self, dataframe_dict: dict):
         '''Joining, Cleaning of the dataframes happens aswell as report based on year ,month
             and year-month is created'''
         self._logger.info('Applying transformations to Sales source data \
-        for cleaning has started...')
+                            for cleaning has started...')
         self._logger.info('Data cleaning has started...')
-        sales = dataframe_dict['SALESDATA.xls'].set_index(self.src_args.src_col_date)
-        region = dataframe_dict['REGION.xls']
-        customer = dataframe_dict['CUSTOMERS.xls']
-        address = dataframe_dict['CUSTOMERADDRESS.xls']
-        divison = dataframe_dict['DIVISION.xls']
-        geo_map = dataframe_dict['GPS.xls'].set_index(self.src_args.src_col_gpsaddress)
+        sales = dataframe_dict[self.src_args.src_sales_data].set_index(self.\
+                src_args.src_col_date)
+        region = dataframe_dict[self.src_args.src_region_data]
+        customer = dataframe_dict[self.src_args.src_customer_data]
+        address = dataframe_dict[self.src_args.src_customeraddress_data]
+        divison = dataframe_dict[self.src_args.src_division_data]
+        geo_map = dataframe_dict[self.src_args.src_gps_data].\
+                  set_index(self.src_args.src_col_gpsaddress)
         mappings = geo_map[['latitude', 'longitude']].to_dict()
         sales.drop(labels=self.src_args.src_columns,axis=1,inplace=True)
+        self._logger.info('Unnesscary columns are dropped...')
         sales[self.trg_args.trg_col_custkey] = sales[self.src_args.src_col_custkey].astype(
             'category')
         sales.rename(
             columns={self.src_args.src_col_amount: self.trg_args.trg_col_amount,
                      self.src_args.src_col_costamount: self.trg_args.trg_col_costamount,
                      self.src_args.src_col_marginamount: self.trg_args.trg_col_marginamount},
-            inplace=True)
+                     inplace=True)
         sales[self.trg_args.trg_col_year] = pd.DatetimeIndex(sales.index).year
         sales[self.trg_args.trg_col_month] = pd.DatetimeIndex(sales.index).month
+        self._logger.info('Missing value imputation begins ....')
         sales_2018= sales[sales[self.trg_args.trg_col_year] == 2018]
         sales.drop(sales[sales[self.trg_args.trg_col_year] == 2018].index, inplace=True)
         sale_2019 = sales[sales.year == 2019].set_index(self.trg_args.trg_col_month)
@@ -116,14 +135,15 @@ class SalesETL():
         sale_2019 = sale_2019[sale_2019.index.isin([i for i in range(4, 13)])]
         sale_2017 = sale_2017[sale_2017.index.isin([i for i in range(4, 13)])]
         report_2019 = pd.pivot_table(sale_2019,
-            values=[self.trg_args.trg_col_costamount,
-            self.trg_args.trg_col_amount,self.src_args.src_col_dis_amount,
-            self.trg_args.trg_col_marginamount,self.src_args.src_col_salequant],
-            index=self.trg_args.trg_col_month, aggfunc=sum)
+                      values=[self.trg_args.trg_col_costamount,
+                      self.trg_args.trg_col_amount,self.src_args.src_col_dis_amount,
+                      self.trg_args.trg_col_marginamount,self.src_args.src_col_salequant],
+                      index=self.trg_args.trg_col_month, aggfunc=sum)
         report_2017 = pd.pivot_table(sale_2017,
-            values=[self.trg_args.trg_col_costamount, self.trg_args.trg_col_amount,
-            self.src_args.src_col_dis_amount,self.trg_args.trg_col_marginamount,
-            self.src_args.src_col_salequant],index=self.trg_args.trg_col_month, aggfunc=sum)
+                      values=[self.trg_args.trg_col_costamount, self.trg_args.trg_col_amount,
+                      self.src_args.src_col_dis_amount,self.trg_args.trg_col_marginamount,
+                      self.src_args.src_col_salequant],index=self.trg_args.trg_col_month,
+                      aggfunc=sum)
         df_concat = pd.concat((report_2019, report_2017))
         df_means = df_concat.groupby(level=0).mean()
         df_means[self.trg_args.trg_col_salequant] = \
@@ -134,10 +154,10 @@ class SalesETL():
         new_2018[self.trg_args.trg_col_year] = pd.DatetimeIndex(new_2018.index).year
         new_2018[self.trg_args.trg_col_month] = pd.DatetimeIndex(new_2018.index).month
         cst_key = pd.pivot_table(sales_2018,
-                values=[self.trg_args.trg_col_costamount, self.trg_args.trg_col_amount,
-                self.trg_args.trg_col_marginamount, self.src_args.src_col_salequant],
-                index=[self.src_args.src_col_custkey]).sort_values(self.trg_args.trg_col_amount,
-                ascending=False).index[0]
+                  values=[self.trg_args.trg_col_costamount, self.trg_args.trg_col_amount,
+                  self.trg_args.trg_col_marginamount, self.src_args.src_col_salequant],
+                  index=[self.src_args.src_col_custkey]).sort_values(self.trg_args.trg_col_amount,
+                  ascending=False).index[0]
         new_2018[self.src_args.src_col_custkey] = \
             new_2018[self.src_args.src_col_custkey].fillna(cst_key)
         complete_df = pd.concat((sales, new_2018))
@@ -148,8 +168,8 @@ class SalesETL():
         new_data3 = pd.merge(new_data2, divison, on=self.src_args.src_col_divison, how='left')
         new_data3.replace(to_replace=' ', value=np.nan, inplace=True)
         new_data3[self.trg_args.trg_col_address] = \
-             new_data3[self.src_args.src_col_city] + ',' + new_data3[
-            self.src_args.src_col_state] + ',' + new_data3[self.src_args.src_col_country]
+             new_data3[self.src_args.src_col_city] + ',' + new_data3[self.src_args.src_col_state] \
+             + ',' + new_data3[self.src_args.src_col_country]
         new_data3[self.trg_args.trg_col_profper] = \
             (new_data3['Profit Amount'] / new_data3['Revenue']) * 100
         new_data3.drop(
@@ -201,73 +221,23 @@ class SalesETL():
             new_data3[self.trg_args.trg_col_address].map(mappings['latitude'])
         new_data3[self.trg_args.trg_col_lon] = \
             new_data3[self.trg_args.trg_col_address].map(mappings['longitude'])
+        self._logger.info('latitude and longitutde has been inserted...')
         new_data3.drop(columns=self.trg_args.trg_col_address, inplace=True)
         new_data3.drop_duplicates(inplace=True)
+        new_data3[self.trg_args.trg_col_datekey]= \
+                 new_data3[self.trg_args.trg_col_year].astype('str') \
+                 +new_data3[self.trg_args.trg_col_month].astype('str')
+        new_data3[self.trg_args.trg_col_datekey]=\
+            pd.to_datetime(new_data3[self.trg_args.trg_col_datekey],format='%Y%m')
+        new_data3.drop(axis=1,columns=[self.trg_args.trg_col_year,
+                self.trg_args.trg_col_month],inplace=True)
         self._logger.info('Data cleaning has finished...')
-        self._logger.info('Creation of report 1 started')
-        dat_1 = new_data3.groupby(['year', 'month']).agg(Item_Class=('Item Class',
-            lambda x: x.value_counts().index[0]),Item=('Item', lambda x: x.value_counts().index[0]),
-            Customer_Type=('Customer Type', lambda x: x.value_counts().index[0]),
-            City=('City', lambda x: x.value_counts().index[0]),
-            State=('State', lambda x: x.value_counts().index[0]),
-            Region_Name=(
-            'Region Name', lambda x: x.value_counts().index[0]),
-            Division=(
-            'Division Name', lambda x: x.value_counts().index[0]),
-            COGS=('COGS', sum), Revenue=('Revenue', sum),
-            Profit_Margin=('Profit_Margin_%', sum),
-            Discount_Amt=('Discount Amount', sum),
-            Sales_Quantity=('Sales Quantity', sum))
-        data_1 = pd.concat((dat_1[['COGS', 'Revenue', 'Profit_Margin',
-        'Discount_Amt', 'Sales_Quantity']].groupby(
-            level=0).pct_change().fillna(0) * 100,
-            dat_1[['Item_Class', 'Item', 'Customer_Type', 'City', 'State',
-            'Region_Name', 'Division']]),
-            axis=1)
-        self._logger.info('Creation of report 1 finished')
-        self._logger.info('Creation of report 2 started')
-        dat_2 = new_data3.groupby('month').agg(
-            Item_Class=('Item Class', lambda x: x.value_counts().index[0]),
-            Item=('Item', lambda x: x.value_counts().index[0]),
-            Customer_Type=('Customer Type', lambda x: x.value_counts().index[0]),
-            City=('City', lambda x: x.value_counts().index[0]),
-            State=('State', lambda x: x.value_counts().index[0]),
-            Region_Name=('Region Name', lambda x: x.value_counts().index[0]),
-            Division=('Division Name', lambda x: x.value_counts().index[0]),
-            COGS=('COGS', sum), Revenue=('Revenue', sum),
-            Profit_Margin=('Profit_Margin_%', sum),
-            Discount_Amt=('Discount Amount', sum),
-            Sales_Quantity=('Sales Quantity', sum))
-        data_2 = pd.concat(
-            (dat_2[['COGS', 'Revenue', 'Profit_Margin', 'Discount_Amt',
-            'Sales_Quantity']].pct_change().fillna(0) * 100,
-             dat_2[['Item_Class', 'Item', 'Customer_Type', 'City', 'State',
-             'Region_Name', 'Division']]), axis=1)
-        self._logger.info('Creation of report 2 finished')
-        self._logger.info('Creation of report 3 started')
-        dat_3 = new_data3.groupby('year').agg(Item_Class=('Item Class',
-            lambda x: x.value_counts().index[0]),
-            Item=('Item', lambda x: x.value_counts().index[0]),
-            Customer_Type=('Customer Type', lambda x: x.value_counts().index[0]),
-            City=('City', lambda x: x.value_counts().index[0]),
-            State=('State', lambda x: x.value_counts().index[0]),
-            Region_Name=('Region Name', lambda x: x.value_counts().index[0]),
-            Division=('Division Name', lambda x: x.value_counts().index[0]),
-            COGS=('COGS', sum), Revenue=('Revenue', sum),
-            Profit_Margin=('Profit_Margin_%', sum),
-            Discount_Amt=('Discount Amount', sum),
-            Sales_Quantity=('Sales Quantity', sum))
-        data_3 = pd.concat(
-            (dat_3[['COGS', 'Revenue', 'Profit_Margin',
-            'Discount_Amt', 'Sales_Quantity']].pct_change().fillna(0) * 100,
-             dat_3[['Item_Class', 'Item', 'Customer_Type', 'City', 'State',
-             'Region_Name', 'Division']]), axis=1)
-        self._logger.info('Creation of report 3 finished')
         self._logger.info('Applying transformations to Sales source \
         data for cleaning has finished...')
-        return new_data3, data_1, data_2, data_3
-    def load(self, data_frame1: pd.DataFrame, data_frame2: pd.DataFrame, data_frame3: pd.DataFrame,
-             data_frame4: pd.DataFrame):
+        self._logger.info('Loading the clean data to S3 bucket....')
+        return new_data3
+
+    def load(self, data_frame: pd.DataFrame):
         """
        Saves a Pandas DataFrame to the target
        :param data_frame: Pandas DataFrame as Input
@@ -275,19 +245,20 @@ class SalesETL():
         # Creating target key
         target_key = f'{self.trg_args.trg_key}.{self.trg_args.trg_format}'
         # Writing to target
-        self.s3_bucket_trg.write_df_to_s3(data_frame1, data_frame2, data_frame3,
-        data_frame4, target_key,self.trg_args.trg_format)
+        self.s3_bucket_trg.write_df_to_s3(data_frame, target_key,self.trg_args.trg_format)
         self._logger.info('Sales target data successfully written.')
+        self._logger.info('ETL process terminated...')
         return True
+
     def etl_report1(self):
         """
-        Extract, transform and load to create report 1
+        Extract, transform and load to create report...
         """
         # Extraction
         dictionary = self.extract()
         # Transformation
-        data_frame1, data_frame2, data_frame3, data_frame4 = self.transform_report1(dictionary)
+        data_frame = self.transform_report1(dictionary)
         # Load
-        self.load(data_frame1, data_frame2, data_frame3, data_frame4)
+        self.load(data_frame)
         return True
         
