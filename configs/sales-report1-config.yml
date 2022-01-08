@@ -6,8 +6,15 @@ s3:
   src_bucket: 'sales-data123'
   trg_endpoint_url: 'https://s3.amazonaws.com'
   trg_bucket: 'report-1234'
-
+  
+# configuration specific to the source bucket
 source:
+  src_sales_data: 'SALESDATA.xls'
+  src_customer_data: 'CUSTOMERS.xls'
+  src_customeraddress_data: 'CUSTOMERADDRESS.xls'
+  src_division_data: 'DIVISION.xls'
+  src_region_data: 'REGION.xls'
+  src_gps_data: 'GPS.xls'
   src_columns: ['U/M', 'Unnamed: 20', 'Unnamed: 21', 'Sales Price', 'Order Number',
                'Line Number', 'Invoice Number','Item Number', 'Invoice Date', 'List Price',
                'Promised Delivery Date','Sales Amount Based on List Price','Sales Rep']
@@ -33,7 +40,7 @@ source:
   src_col_date: 'DateKey'
   src_col_gpsaddress : 'Address'
 
-# configuration specific to the source
+# configuration specific to the target bucket
 target:
   trg_col_custkey: 'CustKey'
   trg_col_amount: 'Revenue'
@@ -60,7 +67,7 @@ target:
   trg_col_lat: 'lat'
   trg_col_lon: 'lon'
   trg_key: 'sales-report'
-  trg_format: 'xlsx'
+  trg_format: 'csv'
 
 logging:
   version: 1
