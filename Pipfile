@@ -11,8 +11,6 @@ pyyaml = "*"
 feature-engine = "*"
 openpyxl = "*"
 xlrd = "*"
-
-[dev-packages]
 awscli = "*"
 moto = "*"
 pylint = "*"
