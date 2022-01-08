@@ -224,6 +224,7 @@ class SalesETL():
         self._logger.info('latitude and longitutde has been inserted...')
         new_data3.drop(columns=self.trg_args.trg_col_address, inplace=True)
         new_data3.drop_duplicates(inplace=True)
+<<<<<<< HEAD
         new_data3[self.trg_args.trg_col_datekey]= \
                  new_data3[self.trg_args.trg_col_year].astype('str') \
                  +new_data3[self.trg_args.trg_col_month].astype('str')
@@ -231,6 +232,12 @@ class SalesETL():
             pd.to_datetime(new_data3[self.trg_args.trg_col_datekey],format='%Y%m')
         new_data3.drop(axis=1,columns=[self.trg_args.trg_col_year,
                 self.trg_args.trg_col_month],inplace=True)
+=======
+        new_data3[self.trg_args.trg_col_datekey]= new_data3[self.trg_args.trg_col_year].astype('str') \
+            +new_data3[self.trg_args.trg_col_month].astype('str')
+        new_data3[self.trg_args.trg_col_datekey]=\
+            pd.to_datetime(new_data3[self.trg_args.trg_col_datekey],format='%Y%m')
+>>>>>>> 21aa2abd856e56de6dc08886c9b04bac1c3fc95a
         self._logger.info('Data cleaning has finished...')
         self._logger.info('Applying transformations to Sales source \
         data for cleaning has finished...')
@@ -261,3 +268,7 @@ class SalesETL():
         # Load
         self.load(data_frame)
         return True
+<<<<<<< HEAD
+=======
+        
+>>>>>>> 21aa2abd856e56de6dc08886c9b04bac1c3fc95a
