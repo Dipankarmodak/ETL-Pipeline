@@ -261,4 +261,3 @@ class SalesETL():
         # Load
         self.load(data_frame)
         return True
-        
