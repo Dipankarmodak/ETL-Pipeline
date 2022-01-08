@@ -31,10 +31,10 @@ def main():
     # reading target configuration
     target_config = SalesTargetConfig(**config['target'])
     logger=logging.getLogger(__name__)
-    logger.info('Sales ETL job started.')
+    logger.info('Sales ETL job started..')
     sales_etl = SalesETL(s3_bucket_src, s3_bucket_trg,source_config, target_config)
     # running etl job for xetra report 1
     sales_etl.etl_report1()
-    logger.info('Sales ETL job finished.')
+    logger.info('Sales ETL job finished..')
 if __name__=='__main__':
     main()

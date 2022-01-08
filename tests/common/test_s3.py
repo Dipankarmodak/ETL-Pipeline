@@ -7,6 +7,7 @@ import pandas as pd
 from moto import mock_s3
 from sales.common.s3 import S3BucketConnector
 from sales.common.custom_exceptions import WrongFormatException
+
 class TestS3BucketConnectorMethods(unittest.TestCase):
     """
     Testing the S3BucketConnector class.
@@ -40,6 +41,7 @@ class TestS3BucketConnectorMethods(unittest.TestCase):
     def tearDown(self):
         # mocking s3 connection stop
         self.mock_s3.stop()
+
     def test_return_objects(self):
         """
         Tests the list_files_in_prefix method for getting
@@ -67,6 +69,7 @@ class TestS3BucketConnectorMethods(unittest.TestCase):
                 ]
             }
         )
+
     def test_read_excel_to_df_ok(self):
         """
         Tests the read_csv_to_df method for
@@ -107,38 +110,29 @@ class TestS3BucketConnectorMethods(unittest.TestCase):
                 ]
             }
         )
-    def test_write_df_to_s3_excel(self):
+
+    def test_write_df_to_s3_csv(self):
         """
         Tests the write_df_to_s3 method
-        if writing excel is successful
+        if writing csv is successful
         """
-        # Expected results
         return_exp = True
-        df_exp1 = pd.read_excel(r'tests\data\sales-report.xlsx',sheet_name='Sheet_name_1',
-        engine='openpyxl')
-        df_exp2 = pd.read_excel(r'tests\data\sales-report.xlsx',sheet_name='Sheet_name_2',
-        engine='openpyxl')
-        df_exp3 = pd.read_excel(r'tests\data\sales-report.xlsx',sheet_name='Sheet_name_3',
-        engine='openpyxl')
-        df_exp4 = pd.read_excel(r'tests\data\sales-report.xlsx',sheet_name='Sheet_name_3',
-        engine='openpyxl')
-        key_exp = 'test.xlsx'
-        # Test init
-        file_format = 'xlsx'
+        df_exp=pd.DataFrame({'col1':['val1'],'col2':['val2']})
+        key_exp = 'test.csv'
         log_exp = f'Writing file to {self.s3_endpoint_url}/{self.s3_bucket_name}/{key_exp}'
+        # Test init
+        file_format = 'csv'
         # Method execution
         with self.assertLogs() as logm:
-            result = self.s3_bucket_conn.write_df_to_s3(df_exp1,df_exp2,df_exp3,df_exp4,
-            key_exp, file_format)
+            result = self.s3_bucket_conn.write_df_to_s3(df_exp, key_exp, file_format)
+            # Log test after method execution
             self.assertIn(log_exp, logm.output[0])
-        # Log test after method execution
-        #target_key = f'{key_exp}.'f'{file_format}'
         # Test after method execution
-        obj = self.s3_bucket.Object(key=key_exp).get()
-        df_result = pd.read_excel(io.BytesIO(obj['Body'].read()),sheet_name='Sheet_name_1',
-        engine='openpyxl')
+        data = self.s3_bucket.Object(key=key_exp).get().get('Body').read().decode('utf-8')
+        out_buffer = io.StringIO(data)
+        df_result = pd.read_csv(out_buffer)
         self.assertEqual(return_exp, result)
-        self.assertTrue(df_exp1.equals(df_result))
+        self.assertTrue(df_exp.equals(df_result))
         # Cleanup after test
         self.s3_bucket.delete_objects(
             Delete={
@@ -149,26 +143,24 @@ class TestS3BucketConnectorMethods(unittest.TestCase):
                 ]
             }
         )
+
     def test_write_df_to_s3_wrong_format(self):
-        """  Tests the write_df_to_s3 method
+        """
+        Tests the write_df_to_s3 method
         if a not supported format is given as argument
         """
         # Expected results
-        df_exp1 = pd.read_excel(r'tests\data\sales-report.xlsx',sheet_name='Sheet_name_1',
-        engine='openpyxl')
-        df_exp2 = pd.read_excel(r'tests\data\sales-report.xlsx',sheet_name='Sheet_name_2',
-        engine='openpyxl')
-        df_exp3 = pd.read_excel(r'tests\data\sales-report.xlsx',sheet_name='Sheet_name_3',
-        engine='openpyxl')
-        df_exp4 = pd.read_excel(r'tests\data\sales-report.xlsx',sheet_name='Sheet_name_3',
-        engine='openpyxl')
-        key_exp = 'test.xlsx'
+        df_exp = pd.DataFrame([['A', 'B'], ['C', 'D']], columns = ['col1', 'col2'])
+        key_exp = 'test.csv'
         format_exp = 'wrong_format'
         log_exp = f'The file format {format_exp} is not supported to be written to s3!'
         exception_exp = WrongFormatException
         # Method execution
         with self.assertLogs() as logm:
             with self.assertRaises(exception_exp):
-                self.s3_bucket_conn.write_df_to_s3(df_exp1, df_exp2,df_exp3,df_exp4,
-                key_exp, format_exp)
+                self.s3_bucket_conn.write_df_to_s3(df_exp, key_exp, format_exp)
+            # Log test after method execution
             self.assertIn(log_exp, logm.output[0])
+
+if __name__ == '__main__':
+    unittest.main()

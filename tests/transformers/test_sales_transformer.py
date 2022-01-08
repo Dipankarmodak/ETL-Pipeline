@@ -8,6 +8,7 @@ from pandas._testing import assert_frame_equal
 from moto import mock_s3
 from sales.common.s3 import S3BucketConnector
 from sales.transformers.sales_transformers  import SalesETL,SalesSourceConfig, SalesTargetConfig
+
 class TestSalesETLMethods(unittest.TestCase):
     """
     Testing the SalesETL class.
@@ -48,6 +49,12 @@ class TestSalesETLMethods(unittest.TestCase):
                                                 self.s3_endpoint_url,
                                                 self.s3_bucket_name_trg)
         conf_dict_src = {
+              'src_sales_data': 'SALESDATA.xls',
+              'src_customer_data': 'CUSTOMERS.xls',
+              'src_customeraddress_data': 'CUSTOMERADDRESS.xls',
+              'src_division_data': 'DIVISION.xls',
+              'src_region_data': 'REGION.xls',
+              'src_gps_data': 'GPS.xls',
               'src_columns': ['U/M', 'Unnamed: 20', 'Unnamed: 21', 'Sales Price', 'Order Number',
               'Line Number', 'Invoice Number','Item Number', 'Invoice Date', 'List Price',
               'Promised Delivery Date','Sales Amount Based on List Price','Sales Rep'],
@@ -73,6 +80,7 @@ class TestSalesETLMethods(unittest.TestCase):
               'src_col_date' :'DateKey',
               'src_col_gpsaddress' : 'Address'
         }
+
         conf_dict_trg = {
                 'trg_col_custkey': 'CustKey',
                 'trg_col_amount': 'Revenue',
@@ -80,6 +88,7 @@ class TestSalesETLMethods(unittest.TestCase):
                 'trg_col_marginamount': 'Profit Amount',
                 'trg_col_year': 'year',
                 'trg_col_month': 'month',
+                'trg_col_datekey': 'Datekey',
                 'trg_col_salequant': 'Sales Quantity',
                 'trg_col_address': 'Address',
                 'trg_col_profper': 'Profit_Margin_%',
@@ -107,17 +116,12 @@ class TestSalesETLMethods(unittest.TestCase):
         self.columns=['Invoice Date','List Price','Sales Amount','Sales Amount Based on \
             List Price','Sales Cost Amount','Sales Margin Amount','Sales Price',
             'Sales Quantity','Sales Rep','U/M']
-        self.df_ym=pd.read_excel(r'tests\data\sales-report.xlsx',
-                   sheet_name='Sheet_name_2')
-        self.df_m = pd.read_excel(r'tests\data\sales-report.xlsx',
-                    sheet_name='Sheet_name_3')
-        self.df_y = pd.read_excel(r'tests\data\sales-report.xlsx',
-                    sheet_name='Sheet_name_4')
-        self.df = pd.read_excel(r'tests\data\sales-report.xlsx',
-                  sheet_name='Sheet_name_1')
+        self.df=pd.read_csv(r'tests\data\sales-report.csv')
+
     def tearDown(self):
         # mocking s3 connection stop
         self.mock_s3.stop()
+
     def test_extract_xls(self):
         """
         Tests the extract method when
@@ -126,17 +130,20 @@ class TestSalesETLMethods(unittest.TestCase):
         # Expected results
         shape_exp = 4
         # Test init
-        self.src_bucket.upload_file(r'tests\data\REGION.xls', 'REGION.xls')
-        self.src_bucket.upload_file(r'tests\data\CUSTOMERS.xls', 'CUSTOMERS.xls')
+        self.src_bucket.upload_file(r'tests\data\REGION.xls', self.source_config.src_region_data)
+        self.src_bucket.upload_file(r'tests\data\CUSTOMERS.xls',
+                                    self.source_config.src_customer_data)
         self.src_bucket.upload_file(r'tests\data\CUSTOMERADDRESS.xls',
-                                'CUSTOMERADDRESS.xls')
-        self.src_bucket.upload_file(r'tests\data\DIVISION.xls', 'DIVISION.xls')
+                                        self.source_config.src_customeraddress_data)
+        self.src_bucket.upload_file(r'tests\data\DIVISION.xls',
+                                        self.source_config.src_division_data)
         # Method execution
         sales_etl = SalesETL(self.s3_bucket_src,self.s3_bucket_trg,
                                   self.source_config, self.target_config)
         df_return = sales_etl.extract()
         # Tests after method execution
         self.assertEqual(shape_exp, len(df_return))
+
     def test_transform_report1_ok(self):
         """
         Tests the transform_report1 method with
@@ -149,46 +156,55 @@ class TestSalesETLMethods(unittest.TestCase):
         division = pd.read_excel(r'tests\data\DIVISION.xls')
         geo = pd.read_excel(r'tests\data\GPS.xls')
         # Expected results
-        df_shape=(60713, 16)
-        report_1=(36, 12)
-        report_2=(12, 12)
-        report_3=(3, 12)
-        new_dict = {'SALESDATA.xls': sales, 'REGION.xls': region,'GPS.xls': geo,
-                    'CUSTOMERS.xls': customer, 'CUSTOMERADDRESS.xls': address,
-                    'DIVISION.xls': division}
+        df_shape=self.df.shape
+        new_dict = {self.source_config.src_sales_data: sales, self.source_config.\
+                    src_region_data: region,self.source_config.src_gps_data: \
+                    geo,self.source_config.src_customer_data: \
+                    customer, self.source_config.src_customeraddress_data: \
+                    address,self.source_config.src_division_data: division}
         # Method execution
         sales_etl = SalesETL(self.s3_bucket_src, self.s3_bucket_trg,
                              self.source_config, self.target_config)
-        df_result,report_ym,report_m,report_y = sales_etl.transform_report1(new_dict)
+        df_result = sales_etl.transform_report1(new_dict)
         # Test after method execution
         self.assertEqual(df_shape, df_result.shape)
-        self.assertEqual(report_1, report_ym.shape)
-        self.assertEqual(report_2, report_m.shape)
-        self.assertEqual(report_3, report_y.shape)
+
     def test_load_ok(self):
         """
         Tests the load method
         """
+        self.src_bucket.upload_file(r'tests\data\SALESDATA.xls',
+            self.source_config.src_sales_data)
+        self.src_bucket.upload_file(r'tests\data\REGION.xls',
+            self.source_config.src_region_data)
+        self.src_bucket.upload_file(r'tests\data\CUSTOMERS.xls',
+            self.source_config.src_customer_data)
+        self.src_bucket.upload_file(r'tests\data\CUSTOMERADDRESS.xls',
+            self.source_config.src_customeraddress_data)
+        self.src_bucket.upload_file(r'tests\data\DIVISION.xls',
+            self.source_config.src_division_data)
+        self.src_bucket.upload_file(r'tests\transformers\GPS.xls',
+            self.source_config.src_gps_data)
         # Expected results
         # The first thing you can test if the key of the uploaded file is correct
         target_key_exp = f'{self.target_config.trg_key}.{self.target_config.trg_format}'
         df_exp1 = self.df
-        df_exp2 = self.df_ym
-        df_exp3 = self.df_m
-        df_exp4 = self.df_y
         # Method execution
         sales_etl = SalesETL(self.s3_bucket_src, self.s3_bucket_trg,
                              self.source_config, self.target_config)
-        sales_etl.load(df_exp1, df_exp2, df_exp3,df_exp4)
+        sales_etl.load(df_exp1)
         # Processing after method execution
         target_key_return = [obj for obj in self.trg_bucket.objects.all()][0].key
-        excel_bytes_data = self.trg_bucket.Object(key=target_key_return).get()['Body'].read()
-        df_return = pd.read_excel(io.BytesIO(excel_bytes_data),sheet_name='Sheet_name_1')
+        data = self.trg_bucket.Object(key=target_key_return).get().get('Body').\
+                read().decode('utf-8')
+        out_buffer = io.StringIO(data)
+        df_result = pd.read_csv(out_buffer)
         # Test after method execution
         self.assertEqual(target_key_exp, target_key_return)
-        assert_frame_equal(df_return,df_exp1)
+        assert_frame_equal(df_result,df_exp1)
         # Here you have to check what you expect and what you want and how to read this excel file
         # should look like
+
     def test_etl_report(self):
         """
         Tests the etl_report1 method
@@ -197,18 +213,6 @@ class TestSalesETLMethods(unittest.TestCase):
         # Expected results
         df_exp = self.df
         # Test init
-        self.src_bucket.upload_file(r'tests\data\SALESDATA.xls',
-        'SALESDATA.xls')
-        self.src_bucket.upload_file(r'tests\data\REGION.xls',
-        'REGION.xls')
-        self.src_bucket.upload_file(r'tests\data\CUSTOMERS.xls',
-        'CUSTOMERS.xls')
-        self.src_bucket.upload_file(r'tests\data\CUSTOMERADDRESS.xls',
-        'CUSTOMERADDRESS.xls')
-        self.src_bucket.upload_file(r'tests\data\DIVISION.xls',
-        'DIVISION.xls')
-        self.src_bucket.upload_file(r'tests\transformers\GPS.xls',
-        'GPS.xls')
         # Method execution
         sales_etl = SalesETL(self.s3_bucket_src, self.s3_bucket_trg,
                              self.source_config, self.target_config)
@@ -216,9 +220,11 @@ class TestSalesETLMethods(unittest.TestCase):
         # Test after method execution
         target_key_return = [obj for obj in self.trg_bucket.objects.all()][0].key
         self.assertEqual(target_key_exp, target_key_return)
-        excel_bytes_data = self.trg_bucket.Object(key=target_key_return).get()['Body'].read()
-        df_return = pd.read_excel(io.BytesIO(excel_bytes_data),sheet_name='Sheet_name_1')
-        assert_frame_equal(df_return,df_exp)
+        data = self.trg_bucket.Object(key=target_key_return).get().get('Body').\
+                read().decode('utf-8')
+        out_buffer = io.StringIO(data)
+        df_result = pd.read_csv(out_buffer)
+        assert_frame_equal(df_result,df_exp)
         # Cleanup after test
         self.trg_bucket.delete_objects(
             Delete={
