@@ -107,7 +107,7 @@ class TestSalesETLMethods(unittest.TestCase):
                 'trg_col_lat': 'lat',
                 'trg_col_lon': 'lon',
                 'trg_key': 'sales-report',
-                'trg_format': 'xlsx'
+                'trg_format': 'csv'
         }
         self.source_config = SalesSourceConfig(**conf_dict_src)
         self.target_config = SalesTargetConfig(**conf_dict_trg)
@@ -183,7 +183,7 @@ class TestSalesETLMethods(unittest.TestCase):
             self.source_config.src_customeraddress_data)
         self.src_bucket.upload_file(r'tests\data\DIVISION.xls',
             self.source_config.src_division_data)
-        self.src_bucket.upload_file(r'tests\transformers\GPS.xls',
+        self.src_bucket.upload_file(r'tests\data\GPS.xls',
             self.source_config.src_gps_data)
         # Expected results
         # The first thing you can test if the key of the uploaded file is correct
