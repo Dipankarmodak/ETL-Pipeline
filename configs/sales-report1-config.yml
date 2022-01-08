@@ -41,6 +41,7 @@ target:
   trg_col_marginamount: 'Profit Amount'
   trg_col_year: 'year'
   trg_col_month: 'month'
+  trg_col_datekey: 'Datekey'
   trg_col_salequant: 'Sales Quantity'
   trg_col_address: 'Address'
   trg_col_profper: 'Profit_Margin_%'
