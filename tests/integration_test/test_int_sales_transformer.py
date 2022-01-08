@@ -90,13 +90,13 @@ class IntTestSalesETLMethods(unittest.TestCase):
         self.source_config = SalesSourceConfig(**conf_dict_src)
         self.target_config = SalesTargetConfig(**conf_dict_trg)
         # Test init
-        self.df_ym=pd.read_excel(r'tests\transformers\sales-report.xlsx',
+        self.df_ym=pd.read_excel(r'tests\data\sales-report.xlsx',
                                                     sheet_name='Sheet_name_2')
-        self.df_m = pd.read_excel(r'tests\transformers\sales-report.xlsx',
+        self.df_m = pd.read_excel(r'tests\data\sales-report.xlsx',
                                                     sheet_name='Sheet_name_3')
-        self.df_y = pd.read_excel(r'tests\transformers\sales-report.xlsx',
+        self.df_y = pd.read_excel(r'tests\data\sales-report.xlsx',
                                                     sheet_name='Sheet_name_4')
-        self.df = pd.read_excel(r'tests\transformers\sales-report.xlsx',
+        self.df = pd.read_excel(r'tests\data\sales-report.xlsx',
                                                     sheet_name='Sheet_name_1')
     def tearDown(self):
         for key in self.src_bucket.objects.all():
