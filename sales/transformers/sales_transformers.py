@@ -107,8 +107,7 @@ class SalesETL():
         self._logger.info('Applying transformations to Sales source data \
                             for cleaning has started...')
         self._logger.info('Data cleaning has started...')
-        sales = dataframe_dict[self.src_args.src_sales_data].set_index(self.\
-                src_args.src_col_date)
+        sales = dataframe_dict[self.src_args.src_sales_data].set_index(self.src_args.src_col_date)
         region = dataframe_dict[self.src_args.src_region_data]
         customer = dataframe_dict[self.src_args.src_customer_data]
         address = dataframe_dict[self.src_args.src_customeraddress_data]

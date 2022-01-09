@@ -213,6 +213,18 @@ class TestSalesETLMethods(unittest.TestCase):
         # Expected results
         df_exp = self.df
         # Test init
+        self.src_bucket.upload_file(r'tests\data\SALESDATA.xls',
+        'SALESDATA.xls')
+        self.src_bucket.upload_file(r'tests\data\REGION.xls',
+        'REGION.xls')
+        self.src_bucket.upload_file(r'tests\data\CUSTOMERS.xls',
+        'CUSTOMERS.xls')
+        self.src_bucket.upload_file(r'tests\data\CUSTOMERADDRESS.xls',
+        'CUSTOMERADDRESS.xls')
+        self.src_bucket.upload_file(r'tests\data\DIVISION.xls',
+        'DIVISION.xls')
+        self.src_bucket.upload_file(r'tests\data\GPS.xls',
+        'GPS.xls')
         # Method execution
         sales_etl = SalesETL(self.s3_bucket_src, self.s3_bucket_trg,
                              self.source_config, self.target_config)
