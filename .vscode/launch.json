@@ -20,7 +20,7 @@
             "request": "launch",
             "program": "D:/Sales_analysis/run.py",
             "console": "integratedTerminal" ,
-            "args": ["D:/Sales_analysis/configs/sales-report1-config.yml"]
+            "args": ["D:/Sales_analysis/configs/sales-config.yml"]
         }
     ]
 }

@@ -178,7 +178,7 @@ class SalesETL():
         median_imputer.fit(new_data3[new_data3[self.trg_args.trg_col_year] == 2017])
         new_data3[new_data3[self.trg_args.trg_col_year] == 2017] = median_imputer.transform(
             new_data3[new_data3[self.trg_args.trg_col_year] == 2017])
-        cat_imputer = CategoricalImputer(imputation_method='missing', fill_value='Missing',
+        cat_imputer = CategoricalImputer(imputation_method='frequent',
                         variables=[self.src_args.src_col_item_class, self.src_args.src_col_item])
         new_data3 = cat_imputer.fit_transform(new_data3)
         imputer_1 = RandomSampleImputer(
