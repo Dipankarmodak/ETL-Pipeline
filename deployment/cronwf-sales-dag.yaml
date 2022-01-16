@@ -1,0 +1,46 @@
+apiVersion: argoproj.io/v1alpha1
+kind: CronWorkflow
+metadata:
+  name: cronwf-amazonsales
+  namespace: argo
+spec:
+  schedule: "0 2 * * *"
+  concurrencyPolicy: "Forbid"
+  startingDeadlineSeconds: 70
+  workflowSpec:
+    entrypoint: dag-template
+    serviceAccountName: argo
+    volumes:
+    - name: config
+      configMap:
+        name: sales-config
+    templates:
+    - name: dag-template
+      dag:
+        tasks:
+        - name: sales-etl-report1
+          template: task-template
+  
+    - name: task-template
+      script:
+        image: dipankar95/sales-etl:8.0
+        imagePullPolicy: Always
+        command: [bash]
+        source: |
+          python /code/run.py /code/configs/sales-config
+        volumeMounts:
+        - name: config
+          mountPath: /code/configs
+          readOnly: true
+        env:
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: sales-secrets
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: sales-secrets
+              key: AWS_SECRET_ACCESS_KEY
+          

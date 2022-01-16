@@ -90,7 +90,7 @@ class SalesETL():
 
     def extract(self):
         """
-               Read the source data and concatenates them to one Pandas DataFrame
+               Read the source data and converts them to one Pandas DataFrame
                :returns:
                  data_frame: Pandas DataFrame with the extracted data
                """
@@ -102,8 +102,7 @@ class SalesETL():
         return dataframes_dictionary
 
     def transform_report1(self, dataframe_dict: dict):
-        '''Joining, Cleaning of the dataframes happens aswell as report based on year ,month
-            and year-month is created'''
+        '''Joining, Cleaning of the dataframes happens aswell '''
         self._logger.info('Applying transformations to Sales source data \
                             for cleaning has started...')
         self._logger.info('Data cleaning has started...')

@@ -44,7 +44,7 @@ class TestS3BucketConnectorMethods(unittest.TestCase):
 
     def test_return_objects(self):
         """
-        Tests the list_files_in_prefix method for getting
+        Tests the return_objects method for getting
         the 2 file keys as list on the mocket s3 bucket
         """
         # Expected results
