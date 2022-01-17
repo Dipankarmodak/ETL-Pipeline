@@ -6,6 +6,7 @@ import numpy as np
 from feature_engine.imputation import MeanMedianImputer,RandomSampleImputer,CategoricalImputer
 from sales.common.s3 import S3BucketConnector
 
+
 class SalesSourceConfig(NamedTuple):
     """
     Class for source configuration data
@@ -126,9 +127,12 @@ class SalesETL():
         sales[self.trg_args.trg_col_year] = pd.DatetimeIndex(sales.index).year
         sales[self.trg_args.trg_col_month] = pd.DatetimeIndex(sales.index).month
         self._logger.info('Missing value imputation begins ....')
-
-        ''' 2018 contains missing value from April till December for every sales record so I will take the sales data from 2017 and 2019 for each month starting from April till December and avergae the value of the sales data for that particular month to use as a imputed value for the missing values of the months in the year 2018.'''
-
+        
+        ''' 2018 contains missing value from April till December for every sales record
+        so I will take the sales data from 2017 and 2019 for each month starting from April
+        till December and avergae the value of the sales data for that particular month to use
+        as a imputed value for the missing values of the months in the year 2018.'''
+        
         sales_2018= sales[sales[self.trg_args.trg_col_year] == 2018]
         sales.drop(sales[sales[self.trg_args.trg_col_year] == 2018].index, inplace=True)
         sale_2019 = sales[sales.year == 2019].set_index(self.trg_args.trg_col_month)
@@ -232,6 +236,8 @@ class SalesETL():
             pd.to_datetime(new_data3[self.trg_args.trg_col_datekey],format='%Y%m')
         new_data3.drop(axis=1,columns=[self.trg_args.trg_col_year,
                 self.trg_args.trg_col_month],inplace=True)
+        new_data3.replace('                         ',np.nan,inplace=True)
+        new_data3.dropna(axis=0,how='any',inplace=True)
         self._logger.info('Data cleaning has finished...')
         self._logger.info('Applying transformations to Sales source \
         data for cleaning has finished...')
@@ -240,7 +246,7 @@ class SalesETL():
 
     def load(self, data_frame: pd.DataFrame):
         """
-       Saves a Pandas DataFrame to the target bucket 
+       Saves a Pandas DataFrame to the target bucket
        :param data_frame: Pandas DataFrame as Input
                """
         # Creating target key
