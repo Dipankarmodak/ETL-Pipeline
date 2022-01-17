@@ -14,3 +14,8 @@ https://drive.google.com/drive/folders/1FkmFVL8wlJmQWP1z52TD8PlhOJhitTyI?usp=sha
 * AWS glue Crawler
 * AWS Athena
 * Tableau Server
+
+## The ETL Pipeline in Action
+![bandicam 2022-01-18 04-05-41-564](https://user-images.githubusercontent.com/77185203/149845626-321a35c4-5ca8-4b61-b0fc-d7f9a92e0097.gif)
+
+## Tableau Server Dashboard
