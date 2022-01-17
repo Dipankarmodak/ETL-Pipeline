@@ -16,11 +16,11 @@
         {
             "name": "etl-pipeline",
             "type": "python",
-            "python.pythonPath": "C:/Users\User/.virtualenvs/ETL-pipeline-20w5Ovl-/Scripts/python.exe",
+            "python.pythonPath": "C:/Users/User/.virtualenvs/ETL-pipeline-20w5Ovl-/Scripts/python.exe",
             "request": "launch",
-            "program": "D:/ETL-prod/ETL-Pipelines/run.py",
+            "program": "D:/ETL-prod/ETL-Pipeline/run.py",
             "console": "integratedTerminal" ,
-            "args": ["D:/ETL-prod/ETL-Pipeline/configs/sales-report1-config.yml"]
+            "args": ["D:/ETL-prod/ETL-Pipeline/configs/sales-config.yml"]
         }
     ]
 }

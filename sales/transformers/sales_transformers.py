@@ -90,7 +90,7 @@ class SalesETL():
 
     def extract(self):
         """
-               Read the source data and concatenates them to one Pandas DataFrame
+               Read the source data and converts them to one Pandas DataFrame
                :returns:
                  data_frame: Pandas DataFrame with the extracted data
                """
@@ -102,13 +102,11 @@ class SalesETL():
         return dataframes_dictionary
 
     def transform_report1(self, dataframe_dict: dict):
-        '''Joining, Cleaning of the dataframes happens aswell as report based on year ,month
-            and year-month is created'''
+        '''Joining, Cleaning of the dataframes happens aswell '''
         self._logger.info('Applying transformations to Sales source data \
                             for cleaning has started...')
         self._logger.info('Data cleaning has started...')
-        sales = dataframe_dict[self.src_args.src_sales_data].set_index(self.\
-                src_args.src_col_date)
+        sales = dataframe_dict[self.src_args.src_sales_data].set_index(self.src_args.src_col_date)
         region = dataframe_dict[self.src_args.src_region_data]
         customer = dataframe_dict[self.src_args.src_customer_data]
         address = dataframe_dict[self.src_args.src_customeraddress_data]
@@ -128,6 +126,9 @@ class SalesETL():
         sales[self.trg_args.trg_col_year] = pd.DatetimeIndex(sales.index).year
         sales[self.trg_args.trg_col_month] = pd.DatetimeIndex(sales.index).month
         self._logger.info('Missing value imputation begins ....')
+
+        ''' 2018 contains missing value from April till December for every sales record so I will take the sales data from 2017 and 2019 for each month starting from April till December and avergae the value of the sales data for that particular month to use as a imputed value for the missing values of the months in the year 2018.'''
+
         sales_2018= sales[sales[self.trg_args.trg_col_year] == 2018]
         sales.drop(sales[sales[self.trg_args.trg_col_year] == 2018].index, inplace=True)
         sale_2019 = sales[sales.year == 2019].set_index(self.trg_args.trg_col_month)
@@ -179,7 +180,7 @@ class SalesETL():
         median_imputer.fit(new_data3[new_data3[self.trg_args.trg_col_year] == 2017])
         new_data3[new_data3[self.trg_args.trg_col_year] == 2017] = median_imputer.transform(
             new_data3[new_data3[self.trg_args.trg_col_year] == 2017])
-        cat_imputer = CategoricalImputer(imputation_method='missing', fill_value='Missing',
+        cat_imputer = CategoricalImputer(imputation_method='frequent',
                         variables=[self.src_args.src_col_item_class, self.src_args.src_col_item])
         new_data3 = cat_imputer.fit_transform(new_data3)
         imputer_1 = RandomSampleImputer(
@@ -239,7 +240,7 @@ class SalesETL():
 
     def load(self, data_frame: pd.DataFrame):
         """
-       Saves a Pandas DataFrame to the target
+       Saves a Pandas DataFrame to the target bucket 
        :param data_frame: Pandas DataFrame as Input
                """
         # Creating target key

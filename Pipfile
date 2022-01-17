@@ -6,7 +6,6 @@ name = "pypi"
 [packages]
 pandas = "*"
 boto3 = "*"
-pyarrow = "*"
 pyyaml = "*"
 feature-engine = "*"
 openpyxl = "*"
@@ -20,4 +19,4 @@ memory-profiler = "*"
 matplotlib = "*"
 
 [requires]
-python_version = "3.9"
+python_version = "3.9.9"
