@@ -4,8 +4,14 @@
 ## Problem Statement
 Sales management has gained importance to meet increasing competition and the needfor improved methods of distribution to reduce cost and to increase profits. Salesmanagement today is the most important function in a commercial and business enterprise.Do ETL : Extract-Transform-Load some Amazon dataset and find  Sales-trend -> month wise , year wise , yearly_month wise Find key metrics and factors and show the meaningful relationships between attributes.
 
-Dataset:You can find the dataset on the given link</br>
-https://drive.google.com/drive/folders/1FkmFVL8wlJmQWP1z52TD8PlhOJhitTyI?usp=sharing
+Dataset:You can find the dataset on the given link : https://drive.google.com/drive/folders/1FkmFVL8wlJmQWP1z52TD8PlhOJhitTyI?usp=sharing </br> 
+* SALESDATA.xls
+* REGION.xls
+* CUSTOMER.xls
+* CUSTOMERADDRESS.xls
+* DIVISION.xls
+
+**Only GPS.xls was not initialy present therefore we had to geocode the text address into latitude and longitude using an external API.**
 
 🛠️ Approaches and Tools </br>
 
@@ -36,4 +42,8 @@ The following KPI were analyzed </br>
 
 ## Documentation Links-
 All the nesscary documentations are present in the main branch.
+
+## Tableau Dashboard links-
+* Tableau  Server-https://tabsoft.co/3GPx9re  
+* Tableau Public-https://tabsoft.co/3nADP5c , https://tabsoft.co/3A6uU0e ,https://tabsoft.co/3FxfK5f
 
