@@ -15,7 +15,25 @@ https://drive.google.com/drive/folders/1FkmFVL8wlJmQWP1z52TD8PlhOJhitTyI?usp=sha
 * AWS Athena
 * Tableau Server
 
+The following KPI were analyzed </br>
+* Sales quantity by month and year 
+* Revenue trend by month and year 
+* Profit margin by month and year 
+* Cost of goods sold by the month and year 
+* Top 10 products by profit margin, revenue for each customer segment
+
 ## The ETL Pipeline in Action
-![bandicam 2022-01-18 04-05-41-564](https://user-images.githubusercontent.com/77185203/149845626-321a35c4-5ca8-4b61-b0fc-d7f9a92e0097.gif)
+![bandicam 2022-01-18 04-05-41-564](https://user-images.githubusercontent.com/77185203/149845626-321a35c4-5ca8-4b61-b0fc-d7f9a92e0097.gif) </br>
 
 ## Tableau Server Dashboard
+![bandicam 2022-01-18 05-04-24-743](https://user-images.githubusercontent.com/77185203/149848075-f1ba30fd-c6be-4638-8665-feaa3d117931.gif)
+
+## For the full video :- https://youtu.be/h6I_FaoWhhI
+
+
+## Workflow of the Project
+![image](https://user-images.githubusercontent.com/77185203/149848749-dc168ace-1f58-4517-bba3-169c89f5cec2.png) </br>
+
+## Documentation Links-
+All the nesscary documentations are present in the main branch.
+
