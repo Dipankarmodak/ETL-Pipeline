@@ -132,7 +132,7 @@ class SalesETL():
         so I will take the sales data from 2017 and 2019 for each month starting from April
         till December and avergae the value of the sales data for that particular month to use
         as a imputed value for the missing values of the months in the year 2018.'''
-        
+
         sales_2018= sales[sales[self.trg_args.trg_col_year] == 2018]
         sales.drop(sales[sales[self.trg_args.trg_col_year] == 2018].index, inplace=True)
         sale_2019 = sales[sales.year == 2019].set_index(self.trg_args.trg_col_month)
