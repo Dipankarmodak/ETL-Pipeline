@@ -34,7 +34,7 @@ The following KPI were analyzed </br>
 ## Tableau Server Dashboard
 ![bandicam 2022-01-18 05-04-24-743](https://user-images.githubusercontent.com/77185203/149848075-f1ba30fd-c6be-4638-8665-feaa3d117931.gif)
 
-## For the full video :- https://youtu.be/h6I_FaoWhhI
+
 
 
 ## Workflow of the Project
